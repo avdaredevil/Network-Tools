@@ -22,74 +22,7 @@ param($Router,[Alias("TC","Console","Log")][Switch]$ThroughConsole)
 # =======================================START=OF=COMPILER==========================================================|
 #    The Following Code was added by AP-Compiler Version [1.0] To Make this program independent of AP-Core Engine
 # ==================================================================================================================|
-function KeyPressed {
-param([Parameter(Mandatory=$True)][String[]]$Key, $Store="^^^")
-
-    if ($Store -eq "^^^" -and $Host.UI.RawUI.KeyAvailable) {$Store = $Host.UI.RawUI.ReadKey("IncludeKeyUp,NoEcho")} else {if ($Store -eq "^^^") {return $False}}
-    $Ans = $False
-    $Key | % {
-        $SOURCE = $_
-        try {
-            $Ans = $Ans -or (KeyPressedCode $SOURCE $Store)
-        } catch {
-            Foreach ($K in $SOURCE) {
-                [String]$K = $K
-                if ($K.length -gt 4 -and ($K[0,1,-1,-2] -join("")) -eq "~~~~") {
-                    $Ans = $ANS -or (KeyPressedCode (KeyTranslate($K)) $Store)
-                } else {
-                    $Ans = $ANS -or ($K.chars(0) -in $Store.Character)
-                }
-            }
-        }
-    }
-    return $Ans
-}
-
-function Align-Text {
-param([Parameter(Mandatory=$True)][String[]]$Text, [ValidateSet("Center","Right","Left")][String]$Align='Center')
-
-    if ($Text.count -gt 1) {
-        $ans = @()
-        foreach ($ln in $Text) {$Ans += Align-Text $ln $Align}
-        return ($ans)
-    } else {
-        $WinSize = $(Get-Host).UI.RawUI.WindowSize.Width
-        if ((""+$Text).Length -ge $WinSize) {
-            $Appender = @("");
-            $j = 0
-            foreach ($p in 0..((""+$Text).Length-1)){
-                if (($p+1)%$winsize -eq 0) {$j++;$Appender += ""}
-#                ""+$j+" - "+$p
-                $Appender[$j] += $Text.chars($p)
-            }
-            return (Align-Text $Appender $Align)
-        } else {
-            if ($Align -eq "Center") {
-                return (" "*[math]::truncate(($WinSize-(""+$Text).Length)/2)+$Text)
-            } elseif ($Align -eq "Right") {
-                return (" "*($WinSize-(""+$Text).Length-1)+$Text)
-            } else {
-                return ($Text)
-            }
-        }
-    }
-}
-
-function Write-AP {
-param([Parameter(Mandatory=$True)][String]$Text)
-
-    $acc  = @(('+','2'),('-','12'),('!','14'),('*','3'))
-    $tb   = '';$func   = $false
-    while ($Text.chars(0) -eq 'x') {$func = $true; $Text = $Text.substring(1).trim()}
-    while ($Text.chars(0) -eq '>') {$tb += "    "; $Text = $Text.substring(1).trim()}
-    $Sign = $Text.chars(0)
-    $Text = $Text.substring(1).trim().replace('/x\','').replace('[.]','[Current Directory]')
-    $vers = $false
-    foreach ($ar in $acc) {if ($ar[0] -eq $sign) {$vers = $true; $clr = $ar[1]; $Sign = "[${Sign}] "}}
-    if (!$vers) {Throw "Incorrect Sign [$Sign] Passed!"}
-    if (!($Silent -and $Sign -eq '[*] ')) {if ($func)  {Write-Host -nonewline -f $clr $tb$Sign$Text} else {write-host -f $clr $tb$Sign$Text}}
-}
-
+iex ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("ZnVuY3Rpb24gSW52b2tlLVRlcm5hcnkgewoKcGFyYW0oW2Jvb2xdJGRlY2lkZXIsIFtzY3JpcHRibG9ja10kaWZ0cnVlLCBbc2NyaXB0YmxvY2tdJGlmZmFsc2UpDQoNCiAgICBpZiAoJGRlY2lkZXIpIHsgJiRpZnRydWV9IGVsc2UgeyAmJGlmZmFsc2UgfQ0KfQoKZnVuY3Rpb24gS2V5UHJlc3NlZCB7CgpwYXJhbShbUGFyYW1ldGVyKE1hbmRhdG9yeT0kVHJ1ZSldW1N0cmluZ1tdXSRLZXksICRTdG9yZT0iXl5eIikNCg0KICAgIGlmICgkU3RvcmUgLWVxICJeXl4iIC1hbmQgJEhvc3QuVUkuUmF3VUkuS2V5QXZhaWxhYmxlKSB7JFN0b3JlID0gJEhvc3QuVUkuUmF3VUkuUmVhZEtleSgiSW5jbHVkZUtleVVwLE5vRWNobyIpfSBlbHNlIHtpZiAoJFN0b3JlIC1lcSAiXl5eIikge3JldHVybiAkRmFsc2V9fQ0KICAgICRBbnMgPSAkRmFsc2UNCiAgICAkS2V5IHwgJSB7DQogICAgICAgICRTT1VSQ0UgPSAkXw0KICAgICAgICB0cnkgew0KICAgICAgICAgICAgJEFucyA9ICRBbnMgLW9yIChLZXlQcmVzc2VkQ29kZSAkU09VUkNFICRTdG9yZSkNCiAgICAgICAgfSBjYXRjaCB7DQogICAgICAgICAgICBGb3JlYWNoICgkSyBpbiAkU09VUkNFKSB7DQogICAgICAgICAgICAgICAgW1N0cmluZ10kSyA9ICRLDQogICAgICAgICAgICAgICAgaWYgKCRLLmxlbmd0aCAtZ3QgNCAtYW5kICgkS1swLDEsLTEsLTJdIC1qb2luKCIiKSkgLWVxICJ+fn5+Iikgew0KICAgICAgICAgICAgICAgICAgICAkQW5zID0gJEFOUyAtb3IgKEtleVByZXNzZWRDb2RlIChLZXlUcmFuc2xhdGUoJEspKSAkU3RvcmUpDQogICAgICAgICAgICAgICAgfSBlbHNlIHsNCiAgICAgICAgICAgICAgICAgICAgJEFucyA9ICRBTlMgLW9yICgkSy5jaGFycygwKSAtaW4gJFN0b3JlLkNoYXJhY3RlcikNCiAgICAgICAgICAgICAgICB9DQogICAgICAgICAgICB9DQogICAgICAgIH0NCiAgICB9DQogICAgcmV0dXJuICRBbnMNCn0KCmZ1bmN0aW9uIEFsaWduLVRleHQgewpwYXJhbShbUGFyYW1ldGVyKE1hbmRhdG9yeT0kVHJ1ZSldW1N0cmluZ1tdXSRUZXh0LCBbVmFsaWRhdGVTZXQoIkNlbnRlciIsIlJpZ2h0IiwiTGVmdCIpXVtTdHJpbmddJEFsaWduPSdDZW50ZXInKQ0KDQogICAgaWYgKCRUZXh0LmNvdW50IC1ndCAxKSB7DQogICAgICAgICRhbnMgPSBAKCkNCiAgICAgICAgZm9yZWFjaCAoJGxuIGluICRUZXh0KSB7JEFucyArPSBBbGlnbi1UZXh0ICRsbiAkQWxpZ259DQogICAgICAgIHJldHVybiAoJGFucykNCiAgICB9IGVsc2Ugew0KICAgICAgICAkV2luU2l6ZSA9ICQoR2V0LUhvc3QpLlVJLlJhd1VJLldpbmRvd1NpemUuV2lkdGgNCiAgICAgICAgaWYgKCgiIiskVGV4dCkuTGVuZ3RoIC1nZSAkV2luU2l6ZSkgew0KICAgICAgICAgICAgJEFwcGVuZGVyID0gQCgiIik7DQogICAgICAgICAgICAkaiA9IDANCiAgICAgICAgICAgIGZvcmVhY2ggKCRwIGluIDAuLigoIiIrJFRleHQpLkxlbmd0aC0xKSl7DQogICAgICAgICAgICAgICAgaWYgKCgkcCsxKSUkd2luc2l6ZSAtZXEgMCkgeyRqKys7JEFwcGVuZGVyICs9ICIifQ0KIyAgICAgICAgICAgICAgICAiIiskaisiIC0gIiskcA0KICAgICAgICAgICAgICAgICRBcHBlbmRlclskal0gKz0gJFRleHQuY2hhcnMoJHApDQogICAgICAgICAgICB9DQogICAgICAgICAgICByZXR1cm4gKEFsaWduLVRleHQgJEFwcGVuZGVyICRBbGlnbikNCiAgICAgICAgfSBlbHNlIHsNCiAgICAgICAgICAgIGlmICgkQWxpZ24gLWVxICJDZW50ZXIiKSB7DQogICAgICAgICAgICAgICAgcmV0dXJuICgiICIqW21hdGhdOjp0cnVuY2F0ZSgoJFdpblNpemUtKCIiKyRUZXh0KS5MZW5ndGgpLzIpKyRUZXh0KQ0KICAgICAgICAgICAgfSBlbHNlaWYgKCRBbGlnbiAtZXEgIlJpZ2h0Iikgew0KICAgICAgICAgICAgICAgIHJldHVybiAoIiAiKigkV2luU2l6ZS0oIiIrJFRleHQpLkxlbmd0aC0xKSskVGV4dCkNCiAgICAgICAgICAgIH0gZWxzZSB7DQogICAgICAgICAgICAgICAgcmV0dXJuICgkVGV4dCkNCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KICAgIH0NCn0KCmZ1bmN0aW9uIFdyaXRlLUFQIHsKCnBhcmFtKFtQYXJhbWV0ZXIoTWFuZGF0b3J5PSRUcnVlKV1bU3RyaW5nXSRUZXh0KQ0KDQogICAgJGFjYyAgPSBAKCgnKycsJzInKSwoJy0nLCcxMicpLCgnIScsJzE0JyksKCcqJywnMycpKQ0KICAgICR0YiAgID0gJyc7JGZ1bmMgICA9ICRmYWxzZQ0KICAgIHdoaWxlICgkVGV4dC5jaGFycygwKSAtZXEgJ3gnKSB7JGZ1bmMgPSAkdHJ1ZTsgJFRleHQgPSAkVGV4dC5zdWJzdHJpbmcoMSkudHJpbSgpfQ0KICAgIHdoaWxlICgkVGV4dC5jaGFycygwKSAtZXEgJz4nKSB7JHRiICs9ICIgICAgIjsgJFRleHQgPSAkVGV4dC5zdWJzdHJpbmcoMSkudHJpbSgpfQ0KICAgICRTaWduID0gJFRleHQuY2hhcnMoMCkNCiAgICAkVGV4dCA9ICRUZXh0LnN1YnN0cmluZygxKS50cmltKCkucmVwbGFjZSgnL3hcJywnJykucmVwbGFjZSgnWy5dJywnW0N1cnJlbnQgRGlyZWN0b3J5XScpDQogICAgJHZlcnMgPSAkZmFsc2UNCiAgICBmb3JlYWNoICgkYXIgaW4gJGFjYykge2lmICgkYXJbMF0gLWVxICRzaWduKSB7JHZlcnMgPSAkdHJ1ZTsgJGNsciA9ICRhclsxXTsgJFNpZ24gPSAiWyR7U2lnbn1dICJ9fQ0KICAgIGlmICghJHZlcnMpIHtUaHJvdyAiSW5jb3JyZWN0IFNpZ24gWyRTaWduXSBQYXNzZWQhIn0NCiAgICBpZiAoISgkU2lsZW50IC1hbmQgJFNpZ24gLWVxICdbKl0gJykpIHtpZiAoJGZ1bmMpICB7V3JpdGUtSG9zdCAtbm9uZXdsaW5lIC1mICRjbHIgJHRiJFNpZ24kVGV4dH0gZWxzZSB7d3JpdGUtaG9zdCAtZiAkY2xyICR0YiRTaWduJFRleHR9fQ0KfQoKU2V0LUFsaWFzID86IEludm9rZS1UZXJuYXJ5")))
 # ========================================END=OF=COMPILER===========================================================|
 function DrawWifi($Str=0,$WifiLn) {
     $lBar = "( "*($str)
@@ -136,7 +69,7 @@ if (!$router) {Write-AP "-Router [$RTR] Does not exist in range!";exit}
 Write-AP "+Router [$Router] found!"
 $SignalGet = 101
 $Stat = 101
-$END = $null
+$END = $Null
 Write-AP "*Loading Locator . . ."
 while ($true) {
     $MSG = "Locating Router : [$Router]"

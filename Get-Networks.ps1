@@ -20,75 +20,9 @@ param([Alias("SM","Merge")][Switch]$SecurityMerge=$False,[Alias("BL","Letter")][
 # =======================================START=OF=COMPILER==========================================================|
 #    The Following Code was added by AP-Compiler Version [1.0] To Make this program independent of AP-Core Engine
 # ==================================================================================================================|
-function Display-Stacks {
-param([Parameter(Mandatory=$True)][Object[]]$Data)
-
-    $op = 0
-    Foreach ($Db in $data) {
-        $op++
-        $TGT = [Console]::BufferWidth-1-"Stack[$op]".Length
-        $RL = [Math]::Ceiling($TGT/2)
-        $LL = $TGT-$RL
-        ('-'*$LL)+"Stack[$op]"+('-'*$RL)+"`n$db"
-    }
-}
-
-function Stacker {
-param([Parameter(Mandatory=$True)][Object[]]$Data, [Int32]$Space=$D_Space, [Switch]$Trim=$false, [Alias("Tab","ByTab","Tabbed","BT")][Switch]$ByTabbing=$false)
-
-    if ($Space -lt 1) {throw "The Space Variable cannot be less than 1";exit}
-    [String]$Buffer = ""; $div = '|-(_+#+_)-|'; $DIVX = '[[[/|_+_|\]]]'
-#    $Data | % {$Buffer += "$("$_".replace("`n",$Div))$Div"}
-    $File = "$env:temp\$(Get-Random)-Stack.txt"
-    $Data > $File
-    $Buffer = [IO.File]::ReadAllLines($file) -join($Div)
-    $Buffer = $Buffer.replace("`n",$Div)
-    del -Force $File | out-null
-    if ($ByTabbing) {
-        $Buffer = $Buffer.trim($Div)
-        $Buffer = $Buffer.replace("$Div"*3,$Div)
-        $Buffer = $Buffer.replace("$Div"*2,$Div)
-        $Buffer = $Buffer.replace("$Div ","$DIVX")
-        $Buffer = $Buffer.replace("$Div","`n")
-        $Buffer = $Buffer.replace("$DIVX","$Div ")
-        [String[]] $BufferC = $Buffer.split("`n")
-    } else {
-        $Buffer = $Buffer.replace("$Div"*$Space,"`n")
-        [Object[]] $BufferC = $Buffer.split("`n")
-        if (!($BufferC[-1])) {$BufferC = $BufferC[0..($BufferC.Length-2)]}
-    }
-    $BufferC[0] = $BufferC[0].trimstart("$Div")
-    $BufferC = $BufferC | % {if ($trim) {$_.trim($Div)} else {$_}} | % {$_.replace($Div,"`n")} | % {$_}
-    return $BufferC
-#    [Object[][]] $BufferF;
-#    for ($i = 0; $i -lt $BufferC.count;$i++) {
-#        $DTStream = ($BufferC[$i]).split("`n")
-#        $BufferF += @($DTStream[0])
-#        for ($j = 1;$j -lt $DTStream.count; $j++) {
-#            $BufferF[$I] += $DTStream[$j]
-##            "-------------------------------"
-#        }
-##        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#    }
-##    Return $BufferF
-}
-
-function Write-AP {
-param([Parameter(Mandatory=$True)][String]$Text)
-
-    $acc  = @(('+','2'),('-','12'),('!','14'),('*','3'))
-    $tb   = '';$func   = $false
-    while ($Text.chars(0) -eq 'x') {$func = $true; $Text = $Text.substring(1).trim()}
-    while ($Text.chars(0) -eq '>') {$tb += "    "; $Text = $Text.substring(1).trim()}
-    $Sign = $Text.chars(0)
-    $Text = $Text.substring(1).trim().replace('/x\','').replace('[.]','[Current Directory]')
-    $vers = $false
-    foreach ($ar in $acc) {if ($ar[0] -eq $sign) {$vers = $true; $clr = $ar[1]; $Sign = "[${Sign}] "}}
-    if (!$vers) {Throw "Incorrect Sign [$Sign] Passed!"}
-    if (!($Silent -and $Sign -eq '[*] ')) {if ($func)  {Write-Host -nonewline -f $clr $tb$Sign$Text} else {write-host -f $clr $tb$Sign$Text}}
-}
-
+iex ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("ZnVuY3Rpb24gU3RhY2tlciB7CnBhcmFtKFtQYXJhbWV0ZXIoTWFuZGF0b3J5PSRUcnVlKV1bT2JqZWN0W11dJERhdGEsIFtJbnQzMl0kU3BhY2U9JERfU3BhY2UsIFtTd2l0Y2hdJFRyaW09JGZhbHNlLCBbQWxpYXMoIlRhYiIsIkJ5VGFiIiwiVGFiYmVkIiwiQlQiKV1bU3dpdGNoXSRCeVRhYmJpbmc9JGZhbHNlKQ0KDQogICAgaWYgKCRTcGFjZSAtbHQgMSkge3Rocm93ICJUaGUgU3BhY2UgVmFyaWFibGUgY2Fubm90IGJlIGxlc3MgdGhhbiAxIjtleGl0fQ0KICAgIFtTdHJpbmddJEJ1ZmZlciA9ICIiOyAkZGl2ID0gJ3wtKF8rIytfKS18JzsgJERJVlggPSAnW1tbL3xfK198XF1dXScNCiMgICAgJERhdGEgfCAlIHskQnVmZmVyICs9ICIkKCIkXyIucmVwbGFjZSgiYG4iLCREaXYpKSREaXYifQ0KICAgICRGaWxlID0gIiRlbnY6dGVtcFwkKEdldC1SYW5kb20pLVN0YWNrLnR4dCINCiAgICAkRGF0YSA+ICRGaWxlDQogICAgJEJ1ZmZlciA9IFtJTy5GaWxlXTo6UmVhZEFsbExpbmVzKCRmaWxlKSAtam9pbigkRGl2KQ0KICAgICRCdWZmZXIgPSAkQnVmZmVyLnJlcGxhY2UoImBuIiwkRGl2KQ0KICAgIGRlbCAtRm9yY2UgJEZpbGUgfCBvdXQtbnVsbA0KICAgIGlmICgkQnlUYWJiaW5nKSB7DQogICAgICAgICRCdWZmZXIgPSAkQnVmZmVyLnRyaW0oJERpdikNCiAgICAgICAgJEJ1ZmZlciA9ICRCdWZmZXIucmVwbGFjZSgiJERpdiIqMywkRGl2KQ0KICAgICAgICAkQnVmZmVyID0gJEJ1ZmZlci5yZXBsYWNlKCIkRGl2IioyLCREaXYpDQogICAgICAgICRCdWZmZXIgPSAkQnVmZmVyLnJlcGxhY2UoIiREaXYgIiwiJERJVlgiKQ0KICAgICAgICAkQnVmZmVyID0gJEJ1ZmZlci5yZXBsYWNlKCIkRGl2IiwiYG4iKQ0KICAgICAgICAkQnVmZmVyID0gJEJ1ZmZlci5yZXBsYWNlKCIkRElWWCIsIiREaXYgIikNCiAgICAgICAgW1N0cmluZ1tdXSAkQnVmZmVyQyA9ICRCdWZmZXIuc3BsaXQoImBuIikNCiAgICB9IGVsc2Ugew0KICAgICAgICAkQnVmZmVyID0gJEJ1ZmZlci5yZXBsYWNlKCIkRGl2IiokU3BhY2UsImBuIikNCiAgICAgICAgW09iamVjdFtdXSAkQnVmZmVyQyA9ICRCdWZmZXIuc3BsaXQoImBuIikNCiAgICAgICAgaWYgKCEoJEJ1ZmZlckNbLTFdKSkgeyRCdWZmZXJDID0gJEJ1ZmZlckNbMC4uKCRCdWZmZXJDLkxlbmd0aC0yKV19DQogICAgfQ0KICAgICRCdWZmZXJDWzBdID0gJEJ1ZmZlckNbMF0udHJpbXN0YXJ0KCIkRGl2IikNCiAgICAkQnVmZmVyQyA9ICRCdWZmZXJDIHwgJSB7aWYgKCR0cmltKSB7JF8udHJpbSgkRGl2KX0gZWxzZSB7JF99fSB8ICUgeyRfLnJlcGxhY2UoJERpdiwiYG4iKX0gfCAlIHskX30NCiAgICByZXR1cm4gJEJ1ZmZlckMNCiMgICAgW09iamVjdFtdW11dICRCdWZmZXJGOw0KIyAgICBmb3IgKCRpID0gMDsgJGkgLWx0ICRCdWZmZXJDLmNvdW50OyRpKyspIHsNCiMgICAgICAgICREVFN0cmVhbSA9ICgkQnVmZmVyQ1skaV0pLnNwbGl0KCJgbiIpDQojICAgICAgICAkQnVmZmVyRiArPSBAKCREVFN0cmVhbVswXSkNCiMgICAgICAgIGZvciAoJGogPSAxOyRqIC1sdCAkRFRTdHJlYW0uY291bnQ7ICRqKyspIHsNCiMgICAgICAgICAgICAkQnVmZmVyRlskSV0gKz0gJERUU3RyZWFtWyRqXQ0KIyMgICAgICAgICAgICAiLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSINCiMgICAgICAgIH0NCiMjICAgICAgICAieHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eCINCiMgICAgfQ0KIyMgICAgUmV0dXJuICRCdWZmZXJGDQp9Cg==")))
 # ========================================END=OF=COMPILER===========================================================|
+
 if ($Clean) {$SecurityMerge = $true;$BandLetter = $true}
 $Networks = Stacker $(netsh wlan show networks mode=BSSID) 2 -trim
 if ($Networks.count -eq 1) {Write-AP "-$((Stacker $Networks -ByTabbing)[-1])";exit}
